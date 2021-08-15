@@ -16,6 +16,6 @@ to get started.
 
 ---
 ## EXE
-If you don't feel like doing what is shown above, just download `PyWirelessTransfer.exe` and run (if you trust me).
+If you don't feel like doing what is shown above, just download [`PyWirelessTransfer.exe`](https://github.com/SeanJxie/PyWirelessTransfer/blob/main/PyWirelessTransfer.exe?raw=true) and run (if you trust me).
 
 ---
