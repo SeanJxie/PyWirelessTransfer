@@ -4,6 +4,7 @@ Directory structure is maintained through the transfer, so no need to worry abou
 
 # Usage
 ---
+Both machines will need to have a copy of the software installed.
 ## Python
 It's all written with the standard Python 3.9 library (Python versions 3.x should run the code fine), so just clone the repo with
 ```
