@@ -1,5 +1,5 @@
 # PyWirelessTransfer
-Useful for transferring files between old and new PCs (which is also the exact reason I wrote this).
+Useful for transferring files between old and new PCs when wires are expensive and unobtainable (which is also the exact reason I wrote this).
 
 # Usage
 ---
@@ -16,6 +16,6 @@ to get started.
 
 ---
 ## EXE
-If you don't feel like doing what is shown above, just download [`PyWirelessTransfer.exe`](https://github.com/SeanJxie/PyWirelessTransfer/blob/main/PyWirelessTransfer.exe?raw=true) and run (if you trust me)!
+If you don't feel like doing what is shown above, download [`PyWirelessTransfer.exe`](https://github.com/SeanJxie/PyWirelessTransfer/blob/main/PyWirelessTransfer.exe?raw=true) and run to get started (if you trust me)!
 
 ---
