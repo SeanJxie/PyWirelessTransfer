@@ -2,19 +2,20 @@ from posixpath import basename
 import socket
 import os
 
+
 class Client:
     def __init__(self, host_server_ip: str, srcdir: str) -> None:
         self.SERVERHOST = host_server_ip
-        self.PORT = 1024    
+        self.PORT = 1024
 
-        self.MSGBYTESIZE  = 3
-        self.CLIENTCONF   = b"\x77\x66\x74" # wft
-        self.SERVERCONF   = b"\x77\x66\x74" # wft
-        self.REJECT       = b"\x00\x00\x00" # 000
-        self.FILEINFOCONF = b"\x72\x63\x66" # rcf
-        self.DIRINFOCONF  = b"\x72\x63\x64" # rcd
+        self.MSGBYTESIZE = 3
+        self.CLIENTCONF = b"\x77\x66\x74"  # wft
+        self.SERVERCONF = b"\x77\x66\x74"  # wft
+        self.REJECT = b"\x00\x00\x00"  # 000
+        self.FILEINFOCONF = b"\x72\x63\x66"  # rcf
+        self.DIRINFOCONF = b"\x72\x63\x64"  # rcd
 
-        self.DIRINFOSIZE      = 64
+        self.DIRINFOSIZE = 64
         self.FILESIZEINFOSIZE = 64
         self.FILENAMEINFOSIZE = 1024 * 4
 
@@ -36,11 +37,15 @@ class Client:
     def _send_file(self, filepath: str) -> None:
         print("        Sending file:", filepath)
         fsize = os.path.getsize(filepath)
-        self.connector.send(fsize.to_bytes(self.FILESIZEINFOSIZE, byteorder="big"))
+        self.connector.send(
+            fsize.to_bytes(self.FILESIZEINFOSIZE, byteorder="big")
+        )
 
-        strpayload = bytearray(map(ord, filepath.replace(self.srcdir, '')[1:])) # Send the filepath with source dir removed.
+        strpayload = bytearray(
+            map(ord, filepath.replace(self.srcdir, "")[1:])
+        )
         self.connector.send(strpayload)
-        
+
         response = self.connector.recv(self.MSGBYTESIZE)
 
         if response == self.FILEINFOCONF:
@@ -90,4 +95,3 @@ class Client:
 
     def __del__(self) -> None:
         self.connector.close()
-

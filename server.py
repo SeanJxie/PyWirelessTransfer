@@ -2,20 +2,25 @@ import typing
 import os
 import socket
 
+
 class Server:
     def __init__(self, dstdir: str) -> None:
         self.HOST = socket.gethostbyname(socket.gethostname())
-        print("In order for the sender machine to locate this machine in the local network, the following internal IP will be needed:", self.HOST)
-        self.PORT = 1024       
+        print(
+            "In order for the sender machine to locate this machine in the "
+            "local network, the following internal IP will be needed:",
+            self.HOST,
+        )
+        self.PORT = 1024
 
-        self.MSGBYTESIZE  = 3
-        self.CLIENTCONF   = b"\x77\x66\x74" # wft
-        self.SERVERCONF   = b"\x77\x66\x74" # wft
-        self.REJECT       = b"\x00\x00\x00" # 000
-        self.FILEINFOCONF = b"\x72\x63\x66" # rcf
-        self.DIRINFOCONF  = b"\x72\x63\x64" # rcd
+        self.MSGBYTESIZE = 3
+        self.CLIENTCONF = b"\x77\x66\x74"  # wft
+        self.SERVERCONF = b"\x77\x66\x74"  # wft
+        self.REJECT = b"\x00\x00\x00"  # 000
+        self.FILEINFOCONF = b"\x72\x63\x66"  # rcf
+        self.DIRINFOCONF = b"\x72\x63\x64"  # rcd
 
-        self.DIRINFOSIZE      = 64
+        self.DIRINFOSIZE = 64
         self.FILESIZEINFOSIZE = 64
         self.FILENAMEINFOSIZE = 1024 * 4
 
@@ -58,14 +63,17 @@ class Server:
         print("        File name:", filename)
 
         try:
-            os.makedirs(os.path.dirname(os.path.join(self.dstdir, filename)), exist_ok=True)
+            os.makedirs(
+                os.path.dirname(os.path.join(self.dstdir, filename)),
+                exist_ok=True
+            )
             with open(os.path.join(dst, filename), "wb") as rf:
                 rf.write(self.client_socket.recv(filesize))
-        except Exception as e: 
+        except Exception as e:
             print("Could not write file:", e)
 
         print("    File received successfully.")
-    
+
     def _recieve_dir(self, dst: str) -> None:
         print("Receiving directory data...")
         dirinfo = self.client_socket.recv(self.DIRINFOSIZE)
