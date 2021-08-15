@@ -17,13 +17,13 @@ class ReceivingServer:
         self.server_socket.listen()
         self.transfer_socket, client_addr = self.server_socket.accept()
 
-        print("Client has connected with address:", client_addr)
+        print("Sender has connected with address:", client_addr)
 
     def handshake(self) -> bool:
         msg = self.transfer_socket.recv(protocol_consts.BYTESIZE_MSG)
         if msg == protocol_consts.MSG_CLIENT_CONF:
             self.transfer_socket.sendall(protocol_consts.MSG_SERVER_CONF)
-            print("Connection has been accepted by client.")
+            print("Connection has been accepted by sender.")
             return True
         else:
             return False

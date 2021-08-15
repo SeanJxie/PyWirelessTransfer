@@ -1,7 +1,7 @@
 import server, client
 
 def main() -> None:
-    mode = input("Would you like this mpachine to be the file sender or receiver? (s/r): ").lower()
+    mode = input("Would you like this machine to be the file sender or receiver? (s/r): ").lower()
     while mode not in ('s', 'r'):
         print("Invalid input. Please try again.")
         mode = input("Would you like this machine to be the file sender or receiver? (s/r): ").lower()
@@ -16,8 +16,6 @@ def main() -> None:
         ftserver.handshake()
         ftserver.receive_dir()
         del ftserver
-
-        
 
     elif mode == 's':
         print("This machine will be sending the files.")

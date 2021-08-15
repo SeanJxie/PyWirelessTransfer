@@ -12,16 +12,16 @@ class SendingClient:
 
     def connect_to_server(self) -> None:
         self.client_socket.connect((self.HOST, protocol_consts.PORT))
-        print("Connected to server.")
+        print("Connected to receiver.")
 
     def handshake(self) -> bool:
         self.client_socket.sendall(protocol_consts.MSG_CLIENT_CONF)
         response = self.client_socket.recv(protocol_consts.BYTESIZE_MSG)
         if response == protocol_consts.MSG_SERVER_CONF:
-            print("Connection has been accepted by server.")
+            print("Connection has been accepted by receiver.")
             return True
         else:
-            print("Connection has been rejected by server.")
+            print("Connection has been rejected by receiver.")
             return False
 
     def _count_files(self) -> int:
@@ -39,37 +39,37 @@ class SendingClient:
         self.client_socket.sendall(pathlen.to_bytes(protocol_consts.BYTESIZE_PATH_SIZE, "big"))
         response = self.client_socket.recv(protocol_consts.BYTESIZE_MSG)
         if response == protocol_consts.MSG_SERVER_CONF:
-            print("    Path length data has been accepted by server.")
+            print("    Path length data has been accepted by receiver.")
             self.client_socket.sendall(bytearray(map(ord, nosrcprefix)))
         else:
-            print("    Path length data has been rejected by server.")
+            print("    Path length data has been rejected by receiver.")
             return False
 
         response = self.client_socket.recv(protocol_consts.BYTESIZE_MSG)
         if response == protocol_consts.MSG_SERVER_CONF:
-            print("    Path data has been accepted by server.")
+            print("    Path data has been accepted by receiver.")
 
             filesize = os.path.getsize(path)
             self.client_socket.sendall(filesize.to_bytes(protocol_consts.BYTESIZE_FILESIZE, "big"))
 
         else:
-            print("    Path data has been rejected by server.")
+            print("    Path data has been rejected by receiver.")
             return False
 
         response = self.client_socket.recv(protocol_consts.BYTESIZE_MSG)
         if response == protocol_consts.MSG_SERVER_CONF:
-            print("    File size data has been accepted by server.")
+            print("    File size data has been accepted by receiver.")
             with open(path, "rb") as payload:
                 self.client_socket.sendall(payload.read())
 
         else:
-            print("    File size data has been rejected by server.")
+            print("    File size data has been rejected by receiver.")
 
         response = self.client_socket.recv(protocol_consts.BYTESIZE_MSG)
         if response == protocol_consts.MSG_SERVER_CONF:
-            print("    File data has been accepted by server.")
+            print("    File data has been accepted by receiver.")
         else:
-            print("    File data has been rejected by server.")
+            print("    File data has been rejected by receiver.")
             return False
 
         print("File transfer complete.\n")
@@ -83,7 +83,7 @@ class SendingClient:
         response = self.client_socket.recv(protocol_consts.BYTESIZE_MSG)
 
         if response == protocol_consts.MSG_SERVER_CONF:
-            print("File quantity data has been accepted by server.")
+            print("File quantity data has been accepted by receiver.")
             for root, _, fnames in os.walk(self.SRC):
                 for fname in fnames:
                     fullpath = os.path.join(root, fname)
@@ -92,5 +92,5 @@ class SendingClient:
                         return False
             return True
         else:
-            print("File quantity data has been rejected by server.")
+            print("File quantity data has been rejected by receiver.")
             return False
