@@ -1,5 +1,5 @@
 # PyWirelessTransfer
-Useful for transferring files between old and new PCs when wires are expensive and unobtainable (which is also the exact reason I wrote this).
+Useful for copying files between old and new PCs when wires are expensive and unobtainable (which is also the exact reason I wrote this).
 Directory structure is maintained through the transfer, so no need to worry about rearranging/renaming files.
 
 # Usage
