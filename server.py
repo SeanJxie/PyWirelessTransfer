@@ -1,88 +1,72 @@
-import typing
-import os
 import socket
+import os
 
-class Server:
+import protocol_consts
+
+class ReceivingServer:
     def __init__(self, dstdir: str) -> None:
+        self.DST = dstdir
+
         self.HOST = socket.gethostbyname(socket.gethostname())
-        print("In order for the sender machine to locate this machine in the local network, the following internal IP will be needed:", self.HOST)
-        self.PORT = 1024       
+        print("In order for the sender machine to locate this machine in the local network, the following local IP will be needed:", self.HOST)
 
-        self.MSGBYTESIZE  = 3
-        self.CLIENTCONF   = b"\x77\x66\x74" # wft
-        self.SERVERCONF   = b"\x77\x66\x74" # wft
-        self.REJECT       = b"\x00\x00\x00" # 000
-        self.FILEINFOCONF = b"\x72\x63\x66" # rcf
-        self.DIRINFOCONF  = b"\x72\x63\x64" # rcd
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.bind((self.HOST, protocol_consts.PORT))
 
-        self.DIRINFOSIZE      = 64
-        self.FILESIZEINFOSIZE = 64
-        self.FILENAMEINFOSIZE = 1024 * 4
+    def listen_and_connect_to_client(self) -> None:
+        self.server_socket.listen()
+        self.transfer_socket, client_addr = self.server_socket.accept()
 
-        self.dstdir = dstdir
-        self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.listener.bind((self.HOST, self.PORT))
-        self.client_socket = self._listen_and_connect_to_client()
+        print("Client has connected with address:", client_addr)
 
-    def _listen_and_connect_to_client(self) -> typing.Union[socket.socket, int]:
-        self.listener.listen()
-        client_socket, addr = self.listener.accept()
-
-        print(f"Accepted connection from: {addr}")
-        print("Confirming connection...")
-
-        if client_socket.recv(self.MSGBYTESIZE) == self.CLIENTCONF:
-            client_socket.send(self.SERVERCONF)
-            print("Connection confirmed.\n")
-            return client_socket
+    def handshake(self) -> bool:
+        msg = self.transfer_socket.recv(protocol_consts.BYTESIZE_MSG)
+        if msg == protocol_consts.MSG_CLIENT_CONF:
+            self.transfer_socket.sendall(protocol_consts.MSG_SERVER_CONF)
+            print("Connection has been accepted by client.")
+            return True
         else:
-            client_socket.send(self.REJECT)
-            print("Connection could not be confirmed.\n")
-            return 0
+            return False
 
-    def _recieve_file(self, dst: str) -> None:
-        print("    Recieving file data...")
+    def _receive_file(self) -> None:
+        # File path length
+        pathlen_bytes = self.transfer_socket.recv(protocol_consts.BYTESIZE_PATH_SIZE)
+        pathlen = int.from_bytes(pathlen_bytes, "big")
 
-        filesizeinfo = self.client_socket.recv(self.FILESIZEINFOSIZE)
-        filesize = int.from_bytes(filesizeinfo, byteorder="big")
+        self.transfer_socket.sendall(protocol_consts.MSG_SERVER_CONF)
 
-        filenameinfo = self.client_socket.recv(self.FILENAMEINFOSIZE)
-        try:
-            filename = filenameinfo.decode()
-        except UnicodeDecodeError as e:
-            print("Could not decode file name:", e)
+        # File path
+        noprefixpathname_bytes = self.transfer_socket.recv(pathlen)
+        noprefixpathname = ''.join(map(chr, noprefixpathname_bytes))
 
-        self.client_socket.send(self.FILEINFOCONF)
+        self.transfer_socket.sendall(protocol_consts.MSG_SERVER_CONF)
 
-        print("        File size:", filesize)
-        print("        File name:", filename)
+        # File size
+        filesize_bytes = self.transfer_socket.recv(protocol_consts.BYTESIZE_FILESIZE)
+        filesize = int.from_bytes(filesize_bytes, "big")
 
-        try:
-            os.makedirs(os.path.dirname(os.path.join(self.dstdir, filename)), exist_ok=True)
-            with open(os.path.join(dst, filename), "wb") as rf:
-                rf.write(self.client_socket.recv(filesize))
-        except Exception as e: 
-            print("Could not write file:", e)
+        self.transfer_socket.sendall(protocol_consts.MSG_SERVER_CONF)
 
-        print("    File received successfully.")
-    
-    def _recieve_dir(self, dst: str) -> None:
-        print("Receiving directory data...")
-        dirinfo = self.client_socket.recv(self.DIRINFOSIZE)
-        nfiles = int.from_bytes(dirinfo, byteorder="big")
-        self.client_socket.send(self.DIRINFOCONF)
-        print("There are", nfiles, "files to be transfered.")
-        print("Receiving files...")
-        for _ in range(nfiles):
-            self._recieve_file(dst)
+        # File data
+        filedata_bytes = self.transfer_socket.recv(filesize)
 
-        print("Directory received successfully.")
+        self.transfer_socket.sendall(protocol_consts.MSG_SERVER_CONF)
 
-    def run(self) -> None:
-        if self.client_socket:
-            self._recieve_dir(self.dstdir)
+        # Write file
+        fulldstpath = os.path.join(self.DST, noprefixpathname)
+        print("Received file:", fulldstpath)
+        os.makedirs(os.path.dirname(fulldstpath), exist_ok=True) # Make the directories needed in order to write the file.
+        with open(fulldstpath, "wb") as dstfile:
+            dstfile.write(filedata_bytes)
 
-        self.client_socket.close()
+        
+    def receive_dir(self) -> None:
+        nfiles_bytes = self.transfer_socket.recv(protocol_consts.BYTESIZE_NFILES)
+        self.transfer_socket.sendall(protocol_consts.MSG_SERVER_CONF)
+        for _ in range(int.from_bytes(nfiles_bytes, "big")):
+            self._receive_file()
+
 
     def __del__(self) -> None:
-        self.listener.close()
+        self.transfer_socket.close()
+        self.server_socket.close()

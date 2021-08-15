@@ -1,93 +1,94 @@
-from posixpath import basename
 import socket
 import os
 
-class Client:
-    def __init__(self, host_server_ip: str, srcdir: str) -> None:
-        self.SERVERHOST = host_server_ip
-        self.PORT = 1024    
+import protocol_consts
 
-        self.MSGBYTESIZE  = 3
-        self.CLIENTCONF   = b"\x77\x66\x74" # wft
-        self.SERVERCONF   = b"\x77\x66\x74" # wft
-        self.REJECT       = b"\x00\x00\x00" # 000
-        self.FILEINFOCONF = b"\x72\x63\x66" # rcf
-        self.DIRINFOCONF  = b"\x72\x63\x64" # rcd
+class SendingClient:
+    def __init__(self, host_ip: str, srcdir: str) -> None:
+        self.HOST = host_ip
+        self.SRC  = srcdir
 
-        self.DIRINFOSIZE      = 64
-        self.FILESIZEINFOSIZE = 64
-        self.FILENAMEINFOSIZE = 1024 * 4
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        self.srcdir = srcdir
-        self.connector = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    def connect_to_server(self) -> None:
+        self.client_socket.connect((self.HOST, protocol_consts.PORT))
+        print("Connected to server.")
 
-    def _connect_to_server(self) -> int:
-        self.connector.connect((self.SERVERHOST, self.PORT))
-        # Handshake
-        self.connector.send(self.CLIENTCONF)
-        response = self.connector.recv(self.MSGBYTESIZE)
-        if response == self.SERVERCONF:
-            print("Connected to destination machine.")
-            return 1
-        elif response == self.REJECT:
-            print("Server has refused connection.")
-            return 0
-
-    def _send_file(self, filepath: str) -> None:
-        print("        Sending file:", filepath)
-        fsize = os.path.getsize(filepath)
-        self.connector.send(fsize.to_bytes(self.FILESIZEINFOSIZE, byteorder="big"))
-
-        strpayload = bytearray(map(ord, filepath.replace(self.srcdir, '')[1:])) # Send the filepath with source dir removed.
-        self.connector.send(strpayload)
-        
-        response = self.connector.recv(self.MSGBYTESIZE)
-
-        if response == self.FILEINFOCONF:
-            print("            File info send success.")
-            print("            Sending file data...")
-            with open(filepath, "rb") as payload:
-                self.connector.send(payload.read())
-            print("            File data send success.")
-
-        elif response == self.REJECT:
-            print("Server has ended communication.")
+    def handshake(self) -> bool:
+        self.client_socket.sendall(protocol_consts.MSG_CLIENT_CONF)
+        response = self.client_socket.recv(protocol_consts.BYTESIZE_MSG)
+        if response == protocol_consts.MSG_SERVER_CONF:
+            print("Connection has been accepted by server.")
+            return True
         else:
-            print("Server isn't following protocol.")
+            print("Connection has been rejected by server.")
+            return False
 
-        print("        File transfer success.")
+    def _count_files(self) -> int:
+        ret = 0
+        for _, _, f in os.walk(self.SRC):
+            ret += len(f)
+        return ret
 
-    def _send_dir(self, dirpath: str) -> None:
-        print("Transfering directory contents...")
+    def _transfer_file(self, path) -> bool:
+        print("Transferring file:", path)
 
-        nfiles = 0
-        for _, _, fnames in os.walk(dirpath):
-            nfiles += len(fnames)
+        nosrcprefix = os.path.relpath(path, self.SRC) # We want to transfer the path of the file with self.SRC prefix removed.
+        pathlen = len(nosrcprefix)
 
-        print("    Sending directory info...")
-        self.connector.send(nfiles.to_bytes(self.DIRINFOSIZE, byteorder="big"))
+        self.client_socket.sendall(pathlen.to_bytes(protocol_consts.BYTESIZE_PATH_SIZE, "big"))
+        response = self.client_socket.recv(protocol_consts.BYTESIZE_MSG)
+        if response == protocol_consts.MSG_SERVER_CONF:
+            print("    Path length data has been accepted by server.")
+            self.client_socket.sendall(bytearray(map(ord, nosrcprefix)))
+        else:
+            print("    Path length data has been rejected by server.")
+            return False
 
-        response = self.connector.recv(self.MSGBYTESIZE)
-        if response == self.DIRINFOCONF:
-            print("    Directory info send success.")
-            print("    Sending files...")
+        response = self.client_socket.recv(protocol_consts.BYTESIZE_MSG)
+        if response == protocol_consts.MSG_SERVER_CONF:
+            print("    Path data has been accepted by server.")
 
-            for root, _, fnames in os.walk(dirpath):
+            filesize = os.path.getsize(path)
+            self.client_socket.sendall(filesize.to_bytes(protocol_consts.BYTESIZE_FILESIZE, "big"))
+
+        else:
+            print("    Path data has been rejected by server.")
+            return False
+
+        response = self.client_socket.recv(protocol_consts.BYTESIZE_MSG)
+        if response == protocol_consts.MSG_SERVER_CONF:
+            print("    File size data has been accepted by server.")
+            with open(path, "rb") as payload:
+                self.client_socket.sendall(payload.read())
+
+        else:
+            print("    File size data has been rejected by server.")
+
+        response = self.client_socket.recv(protocol_consts.BYTESIZE_MSG)
+        if response == protocol_consts.MSG_SERVER_CONF:
+            print("    File data has been accepted by server.")
+        else:
+            print("    File data has been rejected by server.")
+            return False
+
+        print("File transfer complete.\n")
+        return True
+
+    def transfer_dir(self) -> bool:
+        nfiles = self._count_files()
+        print(nfiles, "files to be transfered in total.")
+        
+        self.client_socket.sendall(nfiles.to_bytes(protocol_consts.BYTESIZE_NFILES, "big"))
+        response = self.client_socket.recv(protocol_consts.BYTESIZE_MSG)
+
+        if response == protocol_consts.MSG_SERVER_CONF:
+            print("File quantity data has been accepted by server.")
+            for root, _, fnames in os.walk(self.SRC):
                 for fname in fnames:
                     fullpath = os.path.join(root, fname)
-                    self._send_file(fullpath)
-
-        elif response == self.REJECT:
-            print("Server has ended communication.")
+                    self._transfer_file(fullpath)
+            return True
         else:
-            print("Server isn't following the specified protocol.")
-
-        print("Directory transfer success.")
-
-    def run(self) -> None:
-        if self._connect_to_server():
-            self._send_dir(self.srcdir)
-
-    def __del__(self) -> None:
-        self.connector.close()
-
+            print("File quantity data has been rejected by server.")
+            return False
