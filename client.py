@@ -87,7 +87,9 @@ class SendingClient:
             for root, _, fnames in os.walk(self.SRC):
                 for fname in fnames:
                     fullpath = os.path.join(root, fname)
-                    self._transfer_file(fullpath)
+                    if not self._transfer_file(fullpath):
+                        print("An error has occurred.")
+                        return False
             return True
         else:
             print("File quantity data has been rejected by server.")

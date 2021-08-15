@@ -28,7 +28,9 @@ def main() -> None:
 
         ftclient.connect_to_server()
         ftclient.handshake()
-        ftclient.transfer_dir()
+        if not ftclient.transfer_dir():
+            del ftclient
+            return
         del ftclient
 
     print("Transfer complete. You may now exit the program.")
