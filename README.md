@@ -18,8 +18,8 @@ to get started.
 
 ---
 ## EXE
-If you don't feel like doing what is shown above, download [`PyWirelessTransfer.exe`](https://github.com/SeanJxie/PyWirelessTransfer/releases/download/v1.0/PyWirelessTransfer.exe)  from "[Releases](https://github.com/SeanJxie/PyWirelessTransfer/releases/tag/v1.0)" and run to get started!
+If you REALLY don't feel like doing what is shown above, download [`PyWirelessTransfer.exe`](https://github.com/SeanJxie/PyWirelessTransfer/releases/download/v1.0/PyWirelessTransfer.exe)  from "[Releases](https://github.com/SeanJxie/PyWirelessTransfer/releases/tag/v1.0)" and run to get started!
 
-Keep in mind that this is an unsigned executable making a couple of low-level API calls. Download at your own discretion.
+Keep in mind that this is an unsigned executable making low-level API calls. If you have virus protection of any sort, it'll raise red flags. Download at your own discretion.
 
 ---
