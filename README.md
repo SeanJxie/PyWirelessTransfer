@@ -9,7 +9,7 @@ It's all written with the standard Python 3.9 library (Python versions 3.x shoul
 ```
 git clone https://github.com/SeanJxie/PyWirelessTransfer
 ```
-and run
+Or, you can download the source code from the "releases" section, extract the code, and run
 ```
 py main.py
 ```
