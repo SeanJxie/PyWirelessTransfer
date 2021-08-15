@@ -10,11 +10,11 @@ It's all written with the standard Python 3.9 library (Python versions 3.x shoul
 ```
 git clone https://github.com/SeanJxie/PyWirelessTransfer
 ```
-Or, you can download the source code from "[Releases](https://github.com/SeanJxie/PyWirelessTransfer/releases/tag/v1.0)", extract the code, and run
+Or, you can [download](https://github.com/SeanJxie/PyWirelessTransfer/archive/refs/heads/main.zip) the source code, extract, and run
 ```
 py main.py
 ```
-to get started.
+to get started!
 
 ---
 ## EXE
