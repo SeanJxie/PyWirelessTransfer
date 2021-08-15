@@ -2,6 +2,8 @@
 Useful for transferring files between old and new PCs when wires are expensive and unobtainable (which is also the exact reason I wrote this).
 Directory structure is maintained through the transfer, so no need to worry about rearranging/renaming files.
 
+*Note: Currently rewritting the entire script as things are too buggy...
+
 # Usage
 ---
 ## Python
