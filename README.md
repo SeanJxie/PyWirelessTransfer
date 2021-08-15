@@ -13,6 +13,7 @@ and run
 py main.py
 ```
 to get started.
+
 ---
 ## EXE
 If you don't feel like doing what is shown above, just download `PyWirelessTransfer.exe` and run (if you trust me).
