@@ -1,4 +1,4 @@
-from __future__ import annotations
+import typing
 import os
 import socket
 
@@ -24,7 +24,7 @@ class Server:
         self.listener.bind((self.HOST, self.PORT))
         self.client_socket = self._listen_and_connect_to_client()
 
-    def _listen_and_connect_to_client(self) -> socket | int:
+    def _listen_and_connect_to_client(self) -> typing.Union[socket.socket, int]:
         self.listener.listen()
         client_socket, addr = self.listener.accept()
 
