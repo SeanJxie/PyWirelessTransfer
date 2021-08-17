@@ -1,10 +1,11 @@
+from time import sleep
+
 import server, client
 
+import utils
+
 def main() -> None:
-    mode = input("Would you like this machine to be the file sender or receiver? (s/r): ").lower()
-    while mode not in ('s', 'r'):
-        print("Invalid input. Please try again.")
-        mode = input("Would you like this machine to be the file sender or receiver? (s/r): ").lower()
+    mode = utils.choice_input("Would you like this machine to be the file sender or receiver?", ['s', 'r'])
 
     if mode == 'r':
         print("This machine will be receiving the files.")
@@ -15,6 +16,7 @@ def main() -> None:
         ftserver.listen_and_connect_to_client()
         ftserver.handshake()
         ftserver.receive_dir()
+
         del ftserver
 
     elif mode == 's':
@@ -26,14 +28,12 @@ def main() -> None:
 
         ftclient.connect_to_server()
         ftclient.handshake()
-        if not ftclient.transfer_dir():
-            del ftclient
-            return
+        ftclient.send_dir_copy()
+
         del ftclient
 
-    print("Transfer complete. You may now exit the program.")
-    while 1:
-        pass
+    print("\nTransfer complete. You may now exit the program.")
+    sleep(10)
 
 if __name__ == "__main__":
     main()
