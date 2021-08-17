@@ -12,7 +12,7 @@ git clone https://github.com/SeanJxie/PyWirelessTransfer
 ```
 Or, you can [download](https://github.com/SeanJxie/PyWirelessTransfer/archive/refs/heads/main.zip) the source code, extract, and run
 ```
-py main.py
+py src/main.py
 ```
 to get started!
 
