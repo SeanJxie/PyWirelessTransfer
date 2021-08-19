@@ -11,7 +11,8 @@ It's all written with the standard Python 3.9 library (Python versions 3.x shoul
 git clone https://github.com/SeanJxie/PyWirelessTransfer
 ```
 Or, you can [download](https://github.com/SeanJxie/PyWirelessTransfer/archive/refs/heads/main.zip) the repo as a zip file and extract.
-Then, run
+
+Then, run the script with
 ```
 py src/main.py
 ```
